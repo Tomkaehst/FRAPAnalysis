@@ -2,6 +2,7 @@
 A script in R that performs analyses for fluorescence recovery after photobleaching (FRAP) experiments.
 
 This was added to the master branch.
+This was added to the master branch, although a dependend branch already exists.
 
 
 <div>Placeholder for additions in a new branch</div>
