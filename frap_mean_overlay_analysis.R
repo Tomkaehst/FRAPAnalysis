@@ -1,14 +1,10 @@
+# Initial Declarations
+
 rm(list = ls(all = TRUE))
 
-# Functions for Overlay Analysis
-## The following script is designed to analyse Fluorescence Recovery after Photobleaching experiments in "batch" mode. This means, that you as the user can define the path on the file system of your computer to the measurement data in .csv-format. Preferably, you stored your data in seperate folders for each individual experiment. The script initially loops through the folders of the file path you give to it and loads all of your data in a data frame called "frap". Then you need to define the rows in your data you want to evaluate, which row represents the background and which the correction ROI of observational photobleaching.
-## In the variable "postIntervall" you need to tell the script the index of your measurement data, where your post bleaching intervall startet and ended. 
-## In the end all of the evaluated data are stored in .csv-file (time, mean, standard deviation, standard error)
-
-
-
-
-
+require(readr)
+require(ggplot2)
+require(drc)
 
 frap.normalize = function(intensity, pre_phase = 20:100) {
   
@@ -29,16 +25,26 @@ frap.se = function(sd, sampleSize){
 }
 
 
-measurement_name = "S100A11_wBLM_Ncl"
 
 
-require(readr)
-require(ggplot2)
-require(drc)
+# Functions for Overlay Analysis of FRAP experiments
+## The following script is designed to analyse Fluorescence Recovery after Photobleaching experiments in "batch" mode. This means, that you as the user can define the path on the file system of your computer to the measurement data in .csv-format. Preferably, you stored your data in seperate folders for each individual experiment. The script initially loops through the folders of the file path you give to it and loads all of your data in a data frame called "frap". Then you need to define the rows in your data you want to evaluate, which row represents the background and which the correction ROI of observational photobleaching.
+## In the variable "postIntervall" you need to tell the script the index of your measurement data, where your post bleaching intervall startet and ended. 
+## In the end all of the evaluated data are stored in .csv-file (time, mean, standard deviation, standard error)
 
-####### START
-path = "/Users/tomkache/Documents/Studium/Biologie/SS 2017 B. Sc. Biology FSU Jena/Bachelorarbeit/FRAP-Experimente/S100A11-EGFP/S100A11-EGFP_wBLM_29_07_17/"
+# Asking for Name of the measurement
+
+measurement_name = "BlaBla"
+#measurement_name = readline(prompt = "Please enter the name, that you want to assign to your experiment: ")
+#print("Please be sure, that your measurements are organized in folders. The folders should be named in increasing numbers (1 -- 2 -- 3 -- ...) Each folder should contain a .csv-file with your experimental data. The first column should contain the time intervals. The script will ask, in which column all the other measurement sets are located.")
+
+#path = readline(prompt = "Please enter the filepath where your FOLDERS are located. E.g. /your/file/system/experiment_23/. Be sure to include the "/" at the end of the filepath.")
+path = "Bla/Bla/"
+
+#file_name = readline(prompt = "What are your files called? They all have to be the same name: ")
 file_name = "/test.csv"
+
+
 
 colMeas = 2
 colBack = 4
