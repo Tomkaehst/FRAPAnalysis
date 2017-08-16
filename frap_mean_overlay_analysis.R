@@ -28,21 +28,6 @@ frap.se = function(sd, sampleSize){
   
 }
 
-frap.kinetics = function(t, tau, mf, corr, tau2, B, y0){
-  
-  y = corr + (mf - corr) * (1 - exp(-t / tau)) * (y0 + B * exp(-t / tau2))
-  return(y)
-
-}
-
-frap.BBCorr = function(measurement, background, fading){
-  
-  measurement = sweep(measurement, 1, background)
-  fading = sweep(fading, 1, background)
-  measurent = sweep(measurement, 1, fading)
-  
-  return(measurement)
-}
 
 measurement_name = "S100A11_wBLM_Ncl"
 
