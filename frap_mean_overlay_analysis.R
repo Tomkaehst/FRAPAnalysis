@@ -180,7 +180,7 @@ frap_mean = data.frame(frap_time,
 i = 2
 plot(frap_time,
      frap_ncl_norm[[1]],
-     type = "l"
+     type = "l",
      main = paste("Overlay[FRAP(t)]:",
                   measurement_name),
      xlab = "Zeit [s]",
