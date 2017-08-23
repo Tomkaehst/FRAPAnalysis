@@ -238,37 +238,39 @@ lines(frap_mean$frap_time,
 # Curve Fitting to the Data with determined weights
 ## Getting the data in to shape (t should start at 0)
 
-fit_data = data.frame(frap_mean$frap_time[postInterval:length(frap_mean$frap_time)] - frap_mean$frap_time[postInterval[1]], frap_mean$frap_ncl_mean[postInterval]:length(frap_mean$frap_time))
-
-fit = nls(fit_data$frap_mean.frap_ncl_mean.postInterval. ~ A*(1-exp(-(fit_data$frap_mean.frap_time.postInterval....frap_mean.frap_time.postInterval.1../tau))), data = fit_data, start = list(A = 5, tau = 5))
+fit_data = data.frame(frap_mean$frap_time[(postInterval):length(frap_mean$frap_time)] - frap_mean$frap_time[postInterval[1]], frap_mean$frap_ncl_mean[postInterval:length(frap_mean$frap_time)], frap_mean$frap_ncl_sd[(postInterval):length(frap_mean$frap_time)])
 
 
+fit = nls(fit_data[[2]] ~ A*(1-exp(-( fit_data$frap_mean.frap_time..postInterval..length.frap_mean.frap_time..... / tau))),
+          data = fit_data,
+          start = list(A = 1, tau = 1),
+          weights = (fit_data[[3]]))
 
-# fit = drm((frap_mean$frap_ncl_mean) ~ frap_mean$frap_time,
-#           fct = AR.3(names = c("cor","Mf", "tau")),
-#           start = c(-25000, 0.85, 1),
-#           subset = postInterval:length(frap_mean$frap_time)
-#           #,weights = frap_mean$frap_ncl_sd)
-# )
+fit_data$fitted = predict(fit, newdata = fit_data[[1]])
 
 
 
+## See Additionial 1
 
-plot(frap_mean$frap_time,
-     frap_mean$frap_ncl_mean,
-     main = paste("Av[FRAP(t)]:",
-                  measurement_name,
-                  "(fitted)"),
+
+
+
+plot(fit_data[[1]],
+     fit_data[[2]],
+     main = paste("Fit[FRAP(t)]:",
+                  measurement_name),
      xlab = "Zeit [s]",
      ylab = "FRAP(t) [normalisiert]")
+lines(fit_data[[1]], predict(fit, newdata = fit_data[[1]]), lty = 2)
 
-plot(fit,
-     add = TRUE)
-
-
+ggplot()
 
 
-fit_output = as.vector(summary(fit)[3])
+
+
+# Saving the obtained data in user-defined file path
+
+fit_output = as.vector(summary(fit)[10])
 
 
 write.csv(frap_mean,
@@ -284,6 +286,27 @@ write.csv(fit_output,
                         "_fitData.csv"))
 
 
+
+
+
+
+
+
+
+#Additional 1:
+## Trying the Ellenberg model for fitting to diffusion coefficients (I*(1-(w^2*(w^2+4*pi*D*t)^(-1)))^(1/2))
+
+# omega = 2
+# 
+# fit_alt = nls(fit_data$frap_mean.frap_ncl_mean.postInterval.length.frap_mean.frap_time.. ~ I * (1 - (w^2 * (w^2 + 4 * pi * D * fit_data$frap_mean.frap_time..postInterval..length.frap_mean.frap_time.....)^(-1))^(1/2)), data = fit_data, start = list(I = 0.9, D = 2, w = 2))
+
+
+# fit = drm((frap_mean$frap_ncl_mean) ~ frap_mean$frap_time,
+#           fct = AR.3(names = c("cor","Mf", "tau")),
+#           start = c(-25000, 0.85, 1),
+#           subset = postInterval:length(frap_mean$frap_time)
+#           #,weights = frap_mean$frap_ncl_sd)
+# )
 
 
 
