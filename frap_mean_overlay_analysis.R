@@ -214,7 +214,8 @@ ggplot(frap_mean,
   geom_line() +
   geom_ribbon(aes(ymin = frap_ncl_mean - 3*frap_ncl_se,
                   ymax = frap_ncl_mean + 3*frap_ncl_se),
-              alpha = 0.3)+ ylab("FRAP(t) [normalisiert]") +
+              alpha = 0.3)+ 
+  ylab("FRAP(t) [normalisiert]") +
   xlab("Zeit [s]") +
   ggtitle(paste("Av[FRAP(t)]:",
                 measurement_name,
@@ -254,16 +255,22 @@ fit_data$fitted = predict(fit, newdata = fit_data[[1]])
 
 
 
+ggplot(fit_data, aes(x = fit_data[[1]], y = fit_data[[2]])) + 
+  geom_point() +
+  geom_line(aes(x = fit_data[[1]], y = fit_data[[4]])) +
+  ggtitle(paste("Fit[FRAP(t)]:",
+                measurement_name)) +
+  xlab("Zeit [s]") + 
+  ylab("FRAP(t)")
 
-plot(fit_data[[1]],
-     fit_data[[2]],
-     main = paste("Fit[FRAP(t)]:",
-                  measurement_name),
-     xlab = "Zeit [s]",
-     ylab = "FRAP(t) [normalisiert]")
-lines(fit_data[[1]], predict(fit, newdata = fit_data[[1]]), lty = 2)
-
-ggplot()
+ggplot(fit_data, aes(x = residuals(fit))) + 
+  geom_line(stat = "density") +
+  ggtitle(paste("Residuen[FRAP(t)]:",
+                measurement_name)) +
+  xlab("FRAP(t)") + 
+  ylab("Dichte")
+  
+  
 
 
 
