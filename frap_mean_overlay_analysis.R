@@ -1,10 +1,14 @@
-# Initial Declarations
-
 rm(list = ls(all = TRUE))
 
-require(readr)
-require(ggplot2)
-require(drc)
+# Functions for Overlay Analysis
+## The following script is designed to analyse Fluorescence Recovery after Photobleaching experiments in "batch" mode. This means, that you as the user can define the path on the file system of your computer to the measurement data in .csv-format. Preferably, you stored your data in seperate folders for each individual experiment. The script initially loops through the folders of the file path you give to it and loads all of your data in a data frame called "frap". Then you need to define the rows in your data you want to evaluate, which row represents the background and which the correction ROI of observational photobleaching.
+## In the variable "postIntervall" you need to tell the script the index of your measurement data, where your post bleaching intervall startet and ended. 
+## In the end all of the evaluated data are stored in .csv-file (time, mean, standard deviation, standard error)
+
+
+
+
+
 
 frap.normalize = function(intensity, pre_phase = 20:100) {
   
@@ -24,27 +28,32 @@ frap.se = function(sd, sampleSize){
   
 }
 
+frap.kinetics = function(t, tau, mf, corr, tau2, B, y0){
+  
+  y = corr + (mf - corr) * (1 - exp(-t / tau)) * (y0 + B * exp(-t / tau2))
+  return(y)
+
+}
+
+frap.BBCorr = function(measurement, background, fading){
+  
+  measurement = sweep(measurement, 1, background)
+  fading = sweep(fading, 1, background)
+  measurent = sweep(measurement, 1, fading)
+  
+  return(measurement)
+}
+
+measurement_name = "S100A11_wBLM_Ncl"
 
 
+require(readr)
+require(ggplot2)
+require(drc)
 
-# Functions for Overlay Analysis of FRAP experiments
-## The following script is designed to analyse Fluorescence Recovery after Photobleaching experiments in "batch" mode. This means, that you as the user can define the path on the file system of your computer to the measurement data in .csv-format. Preferably, you stored your data in seperate folders for each individual experiment. The script initially loops through the folders of the file path you give to it and loads all of your data in a data frame called "frap". Then you need to define the rows in your data you want to evaluate, which row represents the background and which the correction ROI of observational photobleaching.
-## In the variable "postIntervall" you need to tell the script the index of your measurement data, where your post bleaching intervall startet and ended. 
-## In the end all of the evaluated data are stored in .csv-file (time, mean, standard deviation, standard error)
-
-# Asking for Name of the measurement
-
-measurement_name = "BlaBla"
-#measurement_name = readline(prompt = "Please enter the name, that you want to assign to your experiment: ")
-#print("Please be sure, that your measurements are organized in folders. The folders should be named in increasing numbers (1 -- 2 -- 3 -- ...) Each folder should contain a .csv-file with your experimental data. The first column should contain the time intervals. The script will ask, in which column all the other measurement sets are located.")
-
-#path = readline(prompt = "Please enter the filepath where your FOLDERS are located. E.g. /your/file/system/experiment_23/. Be sure to include the "/" at the end of the filepath.")
-path = "Bla/Bla/"
-
-#file_name = readline(prompt = "What are your files called? They all have to be the same name: ")
+####### START
+path = "/Users/tomkache/Documents/Studium/Biologie/SS 2017 B. Sc. Biology FSU Jena/Bachelorarbeit/FRAP-Experimente/S100A11-EGFP/S100A11-EGFP_wBLM_29_07_17/"
 file_name = "/test.csv"
-
-
 
 colMeas = 2
 colBack = 4
@@ -58,7 +67,7 @@ postIntveral = 103:202
 # The next step is to bring together all the measurement rows. 
 ## The time axis is skipped and only imported initially (see above) as the time intervals are all the same.
 
-folder = 7
+folder = 1
 
 frap = read_csv(paste0(path,
                        folder,
@@ -196,13 +205,14 @@ while(i < length(frap_ncl_norm)){
 }
 
 
+
 # Plotting the Data with Standard Error
 ggplot(frap_mean,
        aes(x = frap_time,
            y = frap_ncl_mean)) +
   geom_line() +
-  geom_ribbon(aes(ymin = frap_ncl_mean - 5*frap_ncl_se,
-                  ymax = frap_ncl_mean + 5*frap_ncl_se),
+  geom_ribbon(aes(ymin = frap_ncl_mean - 3*frap_ncl_se,
+                  ymax = frap_ncl_mean + 3*frap_ncl_se),
               alpha = 0.3)+ ylab("FRAP(t) [normalisiert]") +
   xlab("Zeit [s]") +
   ggtitle(paste("Av[FRAP(t)]:",
@@ -214,11 +224,11 @@ plot(frap_mean$frap_time,
      pch = 1,
      cex = 0.8)
 lines(frap_mean$frap_time,
-      frap_mean$frap_ncl_mean + 3*frap_mean$frap_ncl_se,
+      frap_mean$frap_ncl_mean + frap_mean$frap_ncl_se,
       lty = 2,
       add = TRUE)
 lines(frap_mean$frap_time,
-      frap_mean$frap_ncl_mean - 3*frap_mean$frap_ncl_se,
+      frap_mean$frap_ncl_mean - frap_mean$frap_ncl_se,
       lty = 2,
       add = TRUE)
 
@@ -229,12 +239,13 @@ lines(frap_mean$frap_time,
 #nls(egfp_mean$egfp_ncl_mean ~ mf*(1-exp(-egfp_mean$egfp_time/tau)),start = list(mf = 0.9, tau = 1), algorithm = "port")
 
 
-fit = drm((frap_mean$frap_ncl_mean) ~ frap_mean$frap_time,
-          fct = AR.3(names = c("cor","Mf", "tau")),
-          start = c(-25000, 0.85, 1),
-          subset = postIntveral
-          #,weights = frap_mean$frap_ncl_sd)
-)
+# fit = drm((frap_mean$frap_ncl_mean) ~ frap_mean$frap_time,
+#           fct = AR.3(names = c("cor","Mf", "tau")),
+#           start = c(-25000, 0.85, 1),
+#           subset = postIntveral
+#           #,weights = frap_mean$frap_ncl_sd)
+# )
+
 
 
 
