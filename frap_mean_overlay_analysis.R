@@ -44,7 +44,7 @@ frap.BBCorr = function(measurement, background, fading){
   return(measurement)
 }
 
-measurement_name = "S100A11_wBLM_Ncl"
+measurement_name = "S100A11_woBLM_Ncl"
 
 
 require(readr)
@@ -52,14 +52,15 @@ require(ggplot2)
 require(drc)
 
 ####### START
-path = "/Users/tomkache/Documents/Studium/Biologie/SS 2017 B. Sc. Biology FSU Jena/Bachelorarbeit/FRAP-Experimente/S100A11-EGFP/S100A11-EGFP_wBLM_29_07_17/"
+path = "/Users/tomkache/Documents/Studium/Biologie/SS 2017 B. Sc. Biology FSU Jena/Bachelorarbeit/FRAP-Experimente/S100A11-EGFP/S100A11-EGFP_woBLM_29_07_17/"
 file_name = "/test.csv"
 
 colMeas = 2
 colBack = 4
 colFade = 5
 
-postIntveral = 103:202
+preInterVal = 20:100
+postInterval = 103
 
 # Batch Import of the Measurement Data
 
@@ -147,11 +148,11 @@ frap_ncl_cor = frap_ncl_cb / frap_fade_cb
 
 
 ## Normalising
-frap_ncl_norm = as.data.frame(frap.normalize(frap_ncl_cor[[1]]))
+frap_ncl_norm = as.data.frame(frap.normalize(frap_ncl_cor[[1]], pre_phase = preInterVal))
 i = 2
 while(i <= length(frap_ncl_cor)){
   
-  dat = frap.normalize(frap_ncl_cor[[i]])
+  dat = frap.normalize(frap_ncl_cor[[i]], pre_phase = preInterVal)
   frap_ncl_norm = cbind(frap_ncl_norm, dat)
   i = i + 1
   
@@ -235,14 +236,18 @@ lines(frap_mean$frap_time,
 
 
 # Curve Fitting to the Data with determined weights
+## Getting the data in to shape (t should start at 0)
 
-#nls(egfp_mean$egfp_ncl_mean ~ mf*(1-exp(-egfp_mean$egfp_time/tau)),start = list(mf = 0.9, tau = 1), algorithm = "port")
+fit_data = data.frame(frap_mean$frap_time[postInterval] - frap_mean$frap_time[postInterval[1]], frap_mean$frap_ncl_mean[postInterval])
+
+fit = nls(fit_data$frap_mean.frap_ncl_mean.postInterval. ~ A*(1-exp(-(fit_data$frap_mean.frap_time.postInterval....frap_mean.frap_time.postInterval.1../tau))), data = fit_data, start = list(A = 5, tau = 5))
+
 
 
 # fit = drm((frap_mean$frap_ncl_mean) ~ frap_mean$frap_time,
 #           fct = AR.3(names = c("cor","Mf", "tau")),
 #           start = c(-25000, 0.85, 1),
-#           subset = postIntveral
+#           subset = postInterval
 #           #,weights = frap_mean$frap_ncl_sd)
 # )
 
@@ -259,6 +264,8 @@ plot(frap_mean$frap_time,
 
 plot(fit,
      add = TRUE)
+
+
 
 
 fit_output = as.vector(summary(fit)[3])
@@ -281,5 +288,3 @@ write.csv(fit_output,
 
 
 
-
-#test = nls(frap_mean$frap_ncl_mean[104:202] ~ A*(1-exp(-frap_mean$frap_time[104:202] / tau)), start = list(A = 0.8, tau = 1))
