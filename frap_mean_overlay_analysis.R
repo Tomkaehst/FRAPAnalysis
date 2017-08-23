@@ -238,7 +238,7 @@ lines(frap_mean$frap_time,
 # Curve Fitting to the Data with determined weights
 ## Getting the data in to shape (t should start at 0)
 
-fit_data = data.frame(frap_mean$frap_time[postInterval] - frap_mean$frap_time[postInterval[1]], frap_mean$frap_ncl_mean[postInterval])
+fit_data = data.frame(frap_mean$frap_time[postInterval:length(frap_mean$frap_time)] - frap_mean$frap_time[postInterval[1]], frap_mean$frap_ncl_mean[postInterval]:length(frap_mean$frap_time))
 
 fit = nls(fit_data$frap_mean.frap_ncl_mean.postInterval. ~ A*(1-exp(-(fit_data$frap_mean.frap_time.postInterval....frap_mean.frap_time.postInterval.1../tau))), data = fit_data, start = list(A = 5, tau = 5))
 
@@ -247,7 +247,7 @@ fit = nls(fit_data$frap_mean.frap_ncl_mean.postInterval. ~ A*(1-exp(-(fit_data$f
 # fit = drm((frap_mean$frap_ncl_mean) ~ frap_mean$frap_time,
 #           fct = AR.3(names = c("cor","Mf", "tau")),
 #           start = c(-25000, 0.85, 1),
-#           subset = postInterval
+#           subset = postInterval:length(frap_mean$frap_time)
 #           #,weights = frap_mean$frap_ncl_sd)
 # )
 
