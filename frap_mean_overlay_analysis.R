@@ -112,12 +112,12 @@ while(folder < 30){
 frap_time = frap[[1]]
 
 i = colMeas
-frap_ncl = data.frame(frap[[i]])
+frap_meas = data.frame(frap[[i]])
 
 while(i <= length(frap)){
   
   dat = frap[[i]]
-  frap_ncl = cbind(frap_ncl, dat)
+  frap_meas = cbind(frap_meas, dat)
   
   i = i+4
   
@@ -154,21 +154,21 @@ while(i <= length(frap)){
 # Correcting for Background & Observational Photobleaching
 ## Subtracting Background from Measurement and Fading ROIs (cb = corrected for background)
 
-frap_ncl_cb = frap_ncl - frap_back
+frap_meas_cb = frap_meas - frap_back
 frap_fade_cb = frap_fade - frap_back
 
 ## Removing Observational Photobleaching by division (measurement / fading)
 
-frap_ncl_cor = frap_ncl_cb / frap_fade_cb
+frap_meas_cor = frap_meas_cb / frap_fade_cb
 
 
 ## Normalising
-frap_ncl_norm = as.data.frame(frap.normalize(frap_ncl_cor[[1]], pre_phase = preInterVal))
+frap_meas_norm = as.data.frame(frap.normalize(frap_meas_cor[[1]], pre_phase = preInterVal))
 i = 2
-while(i <= length(frap_ncl_cor)){
+while(i <= length(frap_meas_cor)){
   
-  dat = frap.normalize(frap_ncl_cor[[i]], pre_phase = preInterVal)
-  frap_ncl_norm = cbind(frap_ncl_norm, dat)
+  dat = frap.normalize(frap_meas_cor[[i]], pre_phase = preInterVal)
+  frap_meas_norm = cbind(frap_meas_norm, dat)
   i = i + 1
   
 }
@@ -177,44 +177,44 @@ while(i <= length(frap_ncl_cor)){
 # Calculating the mean, standard deviaton and standard error to obtain the "average" curve
 ## We will loop through each row of the normalized data frame and calculate these values
 
-frap_ncl_mean = rowMeans(frap_ncl_norm)
-frap_ncl_sd = apply(frap_ncl_norm,
+frap_meas_mean = rowMeans(frap_meas_norm)
+frap_meas_sd = apply(frap_meas_norm,
                     1,
                     sd)
-sample_size = length(frap_ncl_norm)
+sample_size = length(frap_meas_norm)
 
-frap_ncl_se = apply(as.matrix(frap_ncl_sd),
+frap_meas_se = apply(as.matrix(frap_meas_sd),
                     1:2,
                     function(x) x/sqrt(sample_size))
 
 
 # Shifting the Curve: Time begins at Bleaching Event
 
-#frap_time = frap_time - frap_time[which.min(frap_ncl_mean)]
+#frap_time = frap_time - frap_time[which.min(frap_meas_mean)]
 
 # Getting all the data in one data frame (time, mean of measurement, sd, se)
 
 frap_mean = data.frame(frap_time,
-                       frap_ncl_mean,
-                       frap_ncl_sd,
-                       frap_ncl_se)
+                       frap_meas_mean,
+                       frap_meas_sd,
+                       frap_meas_se)
 
 
 # Overlayed measurements
 
 i = 2
 plot(frap_time,
-     frap_ncl_norm[[1]],
+     frap_meas_norm[[1]],
      type = "l",
      main = paste("Overlay[FRAP(t)]:",
                   measurement_name),
      xlab = "Zeit [s]",
      ylab = "FRAP(t) [normalisiert]")
 
-while(i < length(frap_ncl_norm)){
+while(i < length(frap_meas_norm)){
   
   lines(frap_time,
-        frap_ncl_norm[[i]],
+        frap_meas_norm[[i]],
         add = TRUE)
   i = i+1
   
@@ -225,10 +225,10 @@ while(i < length(frap_ncl_norm)){
 # Plotting the Data with Standard Error
 ggplot(frap_mean,
        aes(x = frap_time,
-           y = frap_ncl_mean)) +
+           y = frap_meas_mean)) +
   geom_line() +
-  geom_ribbon(aes(ymin = frap_ncl_mean - 3*frap_ncl_se,
-                  ymax = frap_ncl_mean + 3*frap_ncl_se),
+  geom_ribbon(aes(ymin = frap_meas_mean - 3*frap_meas_se,
+                  ymax = frap_meas_mean + 3*frap_meas_se),
               alpha = 0.3)+ 
   ylab("FRAP(t) [normalisiert]") +
   xlab("Zeit [s]") +
@@ -237,15 +237,15 @@ ggplot(frap_mean,
                 "(+ SE)"))
 
 plot(frap_mean$frap_time,
-     frap_mean$frap_ncl_mean,
+     frap_mean$frap_meas_mean,
      pch = 1,
      cex = 0.8)
 lines(frap_mean$frap_time,
-      frap_mean$frap_ncl_mean + frap_mean$frap_ncl_se,
+      frap_mean$frap_meas_mean + frap_mean$frap_meas_se,
       lty = 2,
       add = TRUE)
 lines(frap_mean$frap_time,
-      frap_mean$frap_ncl_mean - frap_mean$frap_ncl_se,
+      frap_mean$frap_meas_mean - frap_mean$frap_meas_se,
       lty = 2,
       add = TRUE)
 
@@ -254,7 +254,7 @@ lines(frap_mean$frap_time,
 # Curve Fitting to the Data with determined weights
 ## Getting the data in to shape (t should start at 0)
 
-fit_data = data.frame(frap_mean$frap_time[(postInterval):length(frap_mean$frap_time)] - frap_mean$frap_time[postInterval[1]], frap_mean$frap_ncl_mean[postInterval:length(frap_mean$frap_time)], frap_mean$frap_ncl_sd[(postInterval):length(frap_mean$frap_time)])
+fit_data = data.frame(frap_mean$frap_time[(postInterval):length(frap_mean$frap_time)] - frap_mean$frap_time[postInterval[1]], frap_mean$frap_meas_mean[postInterval:length(frap_mean$frap_time)], frap_mean$frap_meas_sd[(postInterval):length(frap_mean$frap_time)])
 
 
 fit = nls(fit_data[[2]] ~ A*(1-exp(-( fit_data$frap_mean.frap_time..postInterval..length.frap_mean.frap_time..... / tau))),
@@ -320,15 +320,15 @@ write.csv(fit_output,
 
 # omega = 2
 # 
-# fit_alt = nls(fit_data$frap_mean.frap_ncl_mean.postInterval.length.frap_mean.frap_time.. ~ I * (1 - (w^2 * (w^2 + 4 * pi * D * fit_data$frap_mean.frap_time..postInterval..length.frap_mean.frap_time.....)^(-1))^(1/2)), data = fit_data, start = list(I = 0.9, D = 2, w = 2))
+# fit_alt = nls(fit_data$frap_mean.frap_meas_mean.postInterval.length.frap_mean.frap_time.. ~ I * (1 - (w^2 * (w^2 + 4 * pi * D * fit_data$frap_mean.frap_time..postInterval..length.frap_mean.frap_time.....)^(-1))^(1/2)), data = fit_data, start = list(I = 0.9, D = 2, w = 2))
 
 
 ## Using the drc package by Christian Ritz et al.
-# fit = drm((frap_mean$frap_ncl_mean) ~ frap_mean$frap_time,
+# fit = drm((frap_mean$frap_meas_mean) ~ frap_mean$frap_time,
 #           fct = AR.3(names = c("cor","Mf", "tau")),
 #           start = c(-25000, 0.85, 1),
 #           subset = postInterval:length(frap_mean$frap_time)
-#           #,weights = frap_mean$frap_ncl_sd)
+#           #,weights = frap_mean$frap_meas_sd)
 # )
 
 
