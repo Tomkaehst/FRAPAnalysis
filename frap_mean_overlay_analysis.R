@@ -5,9 +5,33 @@ rm(list = ls(all = TRUE))
 ## In the variable "postIntervall" you need to tell the script the index of your measurement data, where your post bleaching intervall startet and ended. 
 ## In the end all of the evaluated data are stored in .csv-file (time, mean, standard deviation, standard error)
 
+#### USER INPUT 
+
+# Please add the file path to the FOLDER, that contains your measurements.
+path = "/Users/tomkache/Documents/Studium/Biologie/SS 2017 B. Sc. Biology FSU Jena/Bachelorarbeit/FRAP-Experimente/S100A11-EGFP/S100A11-EGFP_woBLM_29_07_17/"
+
+# What are your csv-files called? 
+file_name = "/test.csv"
+
+# In which columns of your csv-data are the data of the measurement (bleached ROI), the background and the fading (ROI, that contains data about observational photobleaching)?
+colMeas = 2
+colBack = 4
+colFade = 5
+
+# What interval of the prebleaching phase would you like to use for correction? (Please type in the row numbers from:to)
+preInterVal = 20:100
+
+# At which rownumber does the postbleaching phase start? 
+postInterval = 103
+
+# Add the name of your measurement. The averaged FRAP data and the results of the curve fitting will be stored at the location on your coputer, that you provided in the "path" variable.
+measurement_name = "S100A11_woBLM_Ncl"
 
 
+#### END OF USER INPUT
 
+
+# Function definitions
 
 
 frap.normalize = function(intensity, pre_phase = 20:100) {
@@ -44,23 +68,14 @@ frap.BBCorr = function(measurement, background, fading){
   return(measurement)
 }
 
-measurement_name = "S100A11_woBLM_Ncl"
-
+# Loading the required packages
 
 require(readr)
 require(ggplot2)
 require(drc)
 
 ####### START
-path = "/Users/tomkache/Documents/Studium/Biologie/SS 2017 B. Sc. Biology FSU Jena/Bachelorarbeit/FRAP-Experimente/S100A11-EGFP/S100A11-EGFP_woBLM_29_07_17/"
-file_name = "/test.csv"
 
-colMeas = 2
-colBack = 4
-colFade = 5
-
-preInterVal = 20:100
-postInterval = 103
 
 # Batch Import of the Measurement Data
 
@@ -92,7 +107,7 @@ while(folder < 30){
   
 }
 
-# Seperate the ROIs of the nucleus, the cytoplasm, the background and the observational photobleaching
+# Seperate the ROIs of the measurement, the background and the observational photobleaching
 
 frap_time = frap[[1]]
 
@@ -308,6 +323,7 @@ write.csv(fit_output,
 # fit_alt = nls(fit_data$frap_mean.frap_ncl_mean.postInterval.length.frap_mean.frap_time.. ~ I * (1 - (w^2 * (w^2 + 4 * pi * D * fit_data$frap_mean.frap_time..postInterval..length.frap_mean.frap_time.....)^(-1))^(1/2)), data = fit_data, start = list(I = 0.9, D = 2, w = 2))
 
 
+## Using the drc package by Christian Ritz et al.
 # fit = drm((frap_mean$frap_ncl_mean) ~ frap_mean$frap_time,
 #           fct = AR.3(names = c("cor","Mf", "tau")),
 #           start = c(-25000, 0.85, 1),
